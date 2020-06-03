@@ -37,66 +37,6 @@ warnings.simplefilter("ignore", DeprecationWarning)
 
 #############################################3
 
-
-def fft_graph(data,data2):
-    signal = np.frombuffer(data, 'Int16')
-    signal2 = np.frombuffer(data2, 'Int16')
-    fft_signal =np.fft.fft(signal)
-    fft_t= 2*np.abs(fft_signal / 88200)
-    freq = np.fft.fftfreq(len(signal))
-    mask = freq > 0
-    W = np.fft.fftfreq(len(signal))
-    cut_f_signal = fft_signal.copy()
-    cut_f_signal[(W < 0.01)] = 0
-    cut_f_signal[(W > 0.2)] = 0
-    # cut_f_signal[(W>4.0   )] = 0
-    final = np.fft.ifft(cut_f_signal)
-
-    fft_signal2 =np.fft.fft(signal2)
-    fft_t2= 2*np.abs(fft_signal2 / 88200)
-    freq2 = np.fft.fftfreq(len(signal2))
-    mask2 = freq2 > 0
-    W2= np.fft.fftfreq(len(signal2))
-    cut_f_signal2 = fft_signal2.copy()
-    cut_f_signal2[(W < 0.01)] = 0
-    cut_f_signal2[(W > 0.1)] = 0
-    final2 = np.fft.ifft(cut_f_signal2)
-    time = np.linspace(0, len(signal) / fs, num=len(signal))
-    time2 = np.linspace(0, len(signal2) / fs, num=len(signal2))
-    plt.subplot(211)
-    plt.plot(time, final)
-    plt.subplot(212)
-    plt.plot(time2, final2)
-    plt.show()
-
-def fft_hamming(data):
-
-    signal_no_h = np.frombuffer(data, 'Int16')
-    ventaneo = len(signal_no_h)/200
-    hamming= np.hamming(ventaneo)
-    plt.plot(signal_no_h)
-    plt.show()
-    signal=signal_no_h.copy()
-    for i in range(0,88074,378):
-        signal[i:(i+441)] = signal_no_h[i:(i+441)] * hamming
-    plt.plot(signal)
-    plt.show()
-    fft_signal =np.fft.fft(signal)
-    fft_t= 2*np.abs(fft_signal / 88200)
-    freq = np.fft.fftfreq(len(signal))
-    mask = freq > 0
-    W = np.fft.fftfreq(len(signal))
-    cut_f_signal = fft_signal.copy()
-    cut_f_signal[(W < 0.01)] = 0
-    cut_f_signal[(W > 0.2)] = 0
-    #cut_f_signal[(W>4.0   )] = 0
-    final = np.fft.ifft(cut_f_signal)
-    f, (signal_graph, signal_graph2) = plt.subplots(1, 2, )
-    signal_graph.plot(freq[mask], fft_t[mask])
-    signal_graph2.plot(final)
-    plt.show()
-    #final=final.astype('int16')
-    #wavfile.write(name, 44100, final)
 def show(data, data2):
     import numpy as np
     import wave
@@ -200,15 +140,15 @@ if __name__ == '__main__':
         sd.default.channels = 1
         duration = 2
         print("1-Grabar")
-        print("2-Ver señales y espectrogramas")
+        print("2-Ver señales ")
         print("3-ver fft y dispositivos")
-        print("4-Transformada de fourier FFT")
-        print("5-Ver selñales transformadas")
-        print("6-buscar sonidos en señal")
-        print("7-Ver sonidos obtenidos")
-        print("-")
+        print("4-FFT")
+        print("5-Ver señales transformadas")
+        print("6-detectar sonidos")
         print("")
-        print("89-pasar MFCC a CSV")
+        print("88- csv")
+        print("")
+        print("")
         print("10-salir")
 
         error = True
@@ -218,18 +158,18 @@ if __name__ == '__main__':
                 print("opcion: ", option)
                 error = False
             except ValueError:
-                print("Error!")
-                print("Ingrese un entero")
-                print("1-Grabar")
-                print("2-Ver señales y espectrogramas")
-                print("3-ver fft y dispositivos")
-                print("4-Transformada de fourier FFT")
-                print("5-Ver selñales transformadas")
-                print("6-buscar sonidos en señal")
-                print("-")
-                print("")
-                print("89-pasar MFCC a CSV")
-                print("10-salir")
+                        print("1-Grabar")
+                        print("2-Ver señales ")
+                        print("3-ver fft y dispositivos")
+                        print("4-FFT")
+                        print("5-Ver señales transformadas")
+                        print("6-detectar sonidos")
+                        print("")
+                        print("88- csv")
+                        print("")
+                        print("")
+                        print("10-salir")
+
         if option in options:
 
 
@@ -268,9 +208,6 @@ if __name__ == '__main__':
                 if (option == 2):
                         a= pd.read_csv('nombres_diferencias.csv')
                         valores = a['nombres']
-                        print("ingrese duracion")
-                        #dur=float(input())
-                        dur=0.1
                         for i in range(len(valores)):
                             uno=str("1_"+str(valores[i])+".wav")
                             dos=str("2_"+str(valores[i])+".wav")
@@ -287,93 +224,7 @@ if __name__ == '__main__':
                             data2 = archivo2.readframes(-1)
                             signal = np.frombuffer(data, 'Int16')
                             signal2 = np.frombuffer(data2, 'Int16')
-                            (rate1, sig1) = wav.read(uno)
-                            (rate2, sig2) = wav.read(dos)
-                            f, t, Sxx = sg.spectrogram(signal,fs,nperseg=441)
-                            f2, t2, Sxx2 = sg.spectrogram(signal2,fs,nperseg=441)
-                            a = plt.subplot(211)
-                            plt.pcolor(t, f, Sxx, vmax=10, cmap='Greens')
-                            axes = plt.gca()
-                            axes.set_ylim([200, 1000])
-                            plt.ylabel('Frecuencia [Hz]')
-                            plt.xlabel('Tiempo [sec]')
-                            b = plt.subplot(212)
-                            plt.pcolor(t2, f2, Sxx2, vmax=10, cmap='Greens')
-                            axes = plt.gca()
-                            axes.set_ylim([200, 1000])
-                            plt.ylabel('Frecuencia [Hz]')
-                            plt.xlabel('Tiempo [sec]')
-                            plt.show()
-
-
-                            mayor=0
-                            array=[]
-                            for i in Sxx:
-                                sum=0
-                                for n in i:
-                                    sum+=n
-                                array.append(sum)
-                            i=0
-                            while (i<3):
-                                array[i] = 0
-                                i=i+1
-                            print(("ingrese maximo:"))
-                            #may=int(input())
-                            may=110
-                            a=array.index(max(array))
-                            columna = f[a]
-                            detectado=Sxx[a]
-                            print(columna, len(detectado))
-                            i=0
-                            cont=0
-                            while(i<len(detectado)-7):
-
-                                if(detectado[i]<may-50 and detectado[i+1]>may and detectado[i+5]>may):
-                                    print(i*0.009)
-                                    cont=cont+1
-                                    i=i+(5)
-                                else:
-                                    i=i+2
-                            print("detectados: ", cont)
-                            mayor=0
-                            array=[]
-                            for i in Sxx2:
-                                sum=0
-                                for n in i:
-                                    sum+=n
-                                array.append(sum)
-                            i=0
-                            while (i<3):
-                                array[i] = 0
-                                i=i+1
-                            a=array.index(max(array))
-                            columna = f2[a]
-                            detectado=Sxx2[a]
-                            print(columna, len(detectado))
-                            i=10
-                            cont=0
-                            while(i<len(detectado)-7):
-                                if(detectado[i]<may-50 and detectado[i+1]>may and detectado[i+5]>may):
-                                    print(i*0.009)
-                                    cont=cont+1
-                                    i=i+(5)
-                                else:
-                                    i=i+2
-                            print("detectados2: ", cont)
-                            #print(f[a])
-                                #print(a)
-                            #print(f)
-                                #print(i,"-",f[i])
-
-                            #plt.plot(Sxx)
-                            #plt.show()
-                            #plt.pcolormesh(t, f, Sxx)
-                            #plt.ylabel('Frequency [Hz]')
-                            #plt.xlabel('Time [sec]')
-                            #plt.show()
-                            #plt.show()
-                            #plt.plot(librosa.feature.zero_crossing_rate(x))
-                            #plt.show()
+                            show(signal, signal2)
                             print("presiona enter para continuar")
                         input()
                 if option == 3:
@@ -431,7 +282,7 @@ if __name__ == '__main__':
                         datos = archivo.getparams()
                         samples = archivo.getsampwidth()
                         data = archivo.readframes(-1)
-                        data2 = archivo2x.readframes(-1)
+                        data2 = archivo2.readframes(-1)
                         signal = np.frombuffer(data, 'Int16')
                         print(len(signal))
 
@@ -443,14 +294,15 @@ if __name__ == '__main__':
                         #  PARA VER FRECUENCIA DE SONIDO FFT
                         #plt.plot(W,cut_f_signal)
                         #plt.show()
-                        a=frec-10
-                        b=frec+10
+                        a=frec-5
+                        b=frec+5
                         for i in range(0,len(W)):
                             if((W[i]<-b) or (W[i])>b):
                                 cut_f_signal[[i]]=0
                             else:
                                 if((W[i]>-a)  and   (W[i]<a)):
                                     cut_f_signal[[i]]=0
+
                         final = np.fft.ifft(cut_f_signal)
                         final = final.astype('int16')
                         for inicio in range(0, 1000):
@@ -508,9 +360,26 @@ if __name__ == '__main__':
                         signal = np.frombuffer(data, 'Int16')
                         signal2 = np.frombuffer(data2, 'Int16')
                         show(signal,signal2)
+                        ''' ESPECTROGRAMA
 
-
-
+                        (rate1, sig1) = wav.read(uno)
+                        (rate2, sig2) = wav.read(dos)
+                        f, t, Sxx = sg.spectrogram(signal, rate1, nperseg=441)
+                        f2, t2, Sxx2 = sg.spectrogram(signal2, rate2, nperseg=441)
+                        a = plt.subplot(211)
+                        plt.pcolor(t, f, Sxx, vmin=0, vmax=2000, cmap='gist_earth')
+                        axes = plt.gca()
+                        axes.set_ylim([-100, 7000])
+                        plt.ylabel('Frecuencia [Hz]')
+                        plt.xlabel('Tiempo [sec]')
+                        b = plt.subplot(212)
+                        plt.pcolor(t2, f2, Sxx2, vmin=0, vmax=2000, cmap='gist_earth')
+                        axes = plt.gca()
+                        axes.set_ylim([-100, 7000])
+                        plt.ylabel('Frecuencia [Hz]')
+                        plt.xlabel('Tiempo [sec]')
+                        plt.show()
+                        '''
                     print("presiona enter para continuar")
                     input()
                 if (option==6):
@@ -521,16 +390,25 @@ if __name__ == '__main__':
                     cont = 0
                     print("ingrese duracion del sonido   ej: 0.1")
                     dur = float(input())
-                    dur = int(dur * 44100)
-                    print(dur)
-                    print("ingrese intensidad minima  ej:500")
-                    inten = int(input())
+                    dur2 = dur
+                    dur = int(dur/0.1)
+                    #a = int(input())
+
                     cont_name = 0
+
                     b = pd.read_csv('nombres_individuales.csv')
                     name_csv = []
                     dif_csv = []
                     df1 = pd.DataFrame([], columns=['nombres', 'distancias'])
                     for i in range(len(valores)):
+                        #print("sonido? a)alto b)bajo")
+
+                        #mx = str(input())
+                        mx = "a"
+                        if mx == "a":
+                            maximo = 2004730
+                        else:
+                            maximo = 68000
                         uno = str("fft_1_" + str(valores[i]) + ".wav")
                         dos = str("fft_2_" + str(valores[i]) + ".wav")
                         print("nombres de los archivos: ", uno, dos)
@@ -545,60 +423,152 @@ if __name__ == '__main__':
                         data2 = archivo2.readframes(-1)
                         signal = np.frombuffer(data, 'Int16')
                         signal2 = np.frombuffer(data2, 'Int16')
-                        a = []
+                        muestra = []
                         aux = 0
+                        suma_ant = 0
+                        suma_ant2 = 0
+                        contador=0
 
-                        if (np.amax(signal) > inten):
-                            for x in range(0, len(signal) - dur*3):
-                                if signal[x] > inten:
-                                    if ((len(a) == 0)):
-                                        a.append(x)
-                                    else:
-                                        if (x - (a[aux]) > 15000 and (np.abs(signal[x + dur])) < (inten / 2)):
-                                            a.append(x)
-                                            aux = aux + 1
-                        a2 = []
-                        aux = 0
-                        if (np.amax(signal2) > inten):
-                            for z in range(0, len(signal2) - dur*3):
-                                if signal2[z] > inten:
-                                    if ((len(a2) == 0)):
-                                        a2.append(z)
+                        for j in range(0,len(signal)-int(4410*dur),int(4410*dur)):
+                            suma = 0
+                            suma2 = 0
 
-                                    else:
-                                        if (z - (a2[aux]) > 15000 and (np.abs(signal2[z + dur])) < (inten / 2)):
-                                            a2.append(z)
-                                            aux = aux + 1
-                        print("sonidos detectados en señal 1:", len(a))
-                        print("sonidos detectados en señal 2:", len(a2))
+                            for x in range(0,4410*dur):
+                                suma=np.abs(suma)+np.abs(signal[j+x])
+                                suma2=np.abs(suma2)+np.abs(signal2[j+x])
+                            print("-")
 
-                        print("Numero de muestra señal 1: ", a)
-                        print("Tiempo de inicio del sonido detectado: ", np.round([n / 44100 for n in a], decimals=2))
+                            print(suma/100000)
+                            print(suma_ant/100000)
 
-                        print("posiciones señal 2: ", a2)
-                        print("Tiempo de inicio del sonido detectado: ", np.round([n / 44100 for n in a2], decimals=2))
+                            print(suma2/100000)
+                            print(suma_ant2/100000)
 
-                        if (len(a) == len(a2) and len(a) != 0):
-                            for valor in range(0, len(a)):
-                                tiempo = a[valor] / 44.1
-                                tiempo2 = a2[valor] / 44.1
-                                t1 = tiempo - 5
-                                t2 = tiempo + 200
-                                t3 = tiempo2 - 5
-                                t4 = tiempo2 + 200
-                                newAudio = AudioSegment.from_wav(uno)
-                                newAudio = newAudio[t1:t2]
-                                name = str(cont_name)
-                                dif1 = str(distancia[i])
-                                newAudio.export('{}.a.wav'.format(name), format="wav")
-                                newAudio = AudioSegment.from_wav(dos)
-                                newAudio = newAudio[t3:t4]
-                                newAudio.export('{}.b.wav'.format(name), format="wav")
-                                name1 = (str(cont_name) + ".a")
-                                name_csv.append([name1, dif1])
-                                name2 = (str(cont_name) + ".b")
-                                name_csv.append([name2, dif1])
-                                cont_name = cont_name + 1
+                            print(maximo/100000)
+                            print("-")
+                            if((suma > maximo) and (suma_ant > suma)):
+                                print("ooeeeeee")
+                            if ((suma2 > maximo) and (suma_ant2 >suma2 )):
+                                print("Aaaa")
+                            if ( (((suma > maximo) and (suma_ant < suma)) or ((suma2 > maximo) and (suma_ant2 <suma2 )))):
+                                print("oe")
+                                muestra.append(j)
+                                print(muestra)
+                                    #print("x1", (j+x)/4410)
+                                #print(suma_ant)
+                            suma_ant=suma
+                            suma_ant2=suma2
+                            #print(suma, suma2, maximo)
+                        #print(muestra)
+                        #if (mx=="b"):
+                        #    for z in range(0, int(len(muestra))-1):
+                        #       print((muestra[z-1])/1000,(muestra[z])/1000,(muestra[z+1])/1000)
+                        print(len(muestra))
+                        for valor in range(0, int(len(muestra))):
+                            print(muestra[valor] / 44.1)
+                            if(((((len(muestra)==1 and muestra[valor]/ 44.1) - 441 / 2) >0) )):
+                                for m in range((muestra[valor])-dur*4410,  (muestra[valor]+dur*4410), dur*441):
+                                    print("oe")
+                                    center= 0
+                                    center2=0
+                                    for n in range (0,dur*441):
+                                        center=np.abs(center)+np.abs(signal[m+n])
+                                        center2=np.abs(center2)+np.abs(signal2[m+n])
+
+
+                                print(center)
+                                tiempo = ((muestra[valor]) -9700)
+                                tiempo2 = ((muestra[valor]) + 5000)
+                                if (tiempo>0 and tiempo2>0):
+                                    tiempo_med=np.max(signal[tiempo:tiempo2])
+                                    tiempo_med2=np.max(signal2[tiempo:tiempo2])
+                                    if(tiempo_med >= tiempo_med2 ):
+                                       signal3 = signal[tiempo:tiempo2].tolist()
+                                       c = signal3.index(tiempo_med)
+                                       tiempo2 = tiempo + c  +(4500)
+                                       tiempo = tiempo  +c   -(3000)
+
+                                    if tiempo_med2>tiempo_med:
+                                       signal3=signal2[tiempo:tiempo2].tolist()
+                                       c=signal3.index(tiempo_med2)
+                                       tiempo2 = tiempo + c  +(4500)
+                                       tiempo=tiempo+  c   -(3000)
+
+                                    tiempo = tiempo/44.1
+                                    tiempo2 = tiempo2/44.1
+                                    t1 = tiempo - 100 * dur2 *10
+                                    t2 = tiempo2 + 60 * dur2*10
+                                    t3 = tiempo - 100 *dur2*10
+                                    t4 = tiempo2 + 60 *dur2*10
+                                    newAudio = AudioSegment.from_wav(uno)
+                                    newAudio = newAudio[t1:t2]
+                                    name = str(cont_name)
+                                    dif1 = str(distancia[i])
+                                    newAudio.export('{}.a.wav'.format(name), format="wav")
+                                    newAudio = AudioSegment.from_wav(dos)
+                                    newAudio = newAudio[t3:t4]
+                                    newAudio.export('{}.b.wav'.format(name), format="wav")
+                                    name1 = (str(cont_name) + ".a")
+                                    name_csv.append([name1, dif1])
+                                    name2 = (str(cont_name) + ".b")
+                                    name_csv.append([name2, dif1])
+                                    cont_name = cont_name + 1
+
+
+
+
+                            if(((((muestra[valor]) / 44.1) - 441 / 2) >0 and valor!=0 and valor!=len(muestra) and (((muestra[valor]-muestra[valor-1*dur]>(4410*2  ))and (muestra[valor+1]-muestra[valor]>(4410*3)))or muestra[valor-1]==0))):
+                               for m in range((muestra[valor])-dur*4410,  (muestra[valor]+dur*4410), dur*441):
+
+                                 print("oe")
+                                 center= 0
+                                 center2=0
+                                 for n in range (0,dur*441):
+                                     center=np.abs(center)+np.abs(signal[m+n])
+                                     center2=np.abs(center2)+np.abs(signal2[m+n])
+
+                               print(center)
+                               tiempo = ((muestra[valor]) -9700)
+                               tiempo2 = ((muestra[valor]) + 5000)
+                               if (tiempo>0 and tiempo2>0):
+                                    tiempo_med=np.max(signal[tiempo:tiempo2])
+                                    tiempo_med2=np.max(signal2[tiempo:tiempo2])
+
+
+
+
+
+                                    if(tiempo_med >= tiempo_med2 ):
+                                        signal3 = signal[tiempo:tiempo2].tolist()
+                                        c = signal3.index(tiempo_med)
+                                        tiempo2 = tiempo + c  +(4500)
+                                        tiempo = tiempo  +c   -(3000)
+
+                                    if tiempo_med2>tiempo_med:
+                                        signal3=signal2[tiempo:tiempo2].tolist()
+                                        c=signal3.index(tiempo_med2)
+                                        tiempo2 = tiempo + c  +(4500)
+                                        tiempo=tiempo+  c   -(3000)
+
+                                    tiempo = tiempo/44.1
+                                    tiempo2 = tiempo2/44.1
+                                    t1 = tiempo - 100 * dur2 *10
+                                    t2 = tiempo2 + 60 * dur2*10
+                                    t3 = tiempo - 100 *dur2*10
+                                    t4 = tiempo2 + 60 *dur2*10
+                                    newAudio = AudioSegment.from_wav(uno)
+                                    newAudio = newAudio[t1:t2]
+                                    name = str(cont_name)
+                                    dif1 = str(distancia[i])
+                                    newAudio.export('{}.a.wav'.format(name), format="wav")
+                                    newAudio = AudioSegment.from_wav(dos)
+                                    newAudio = newAudio[t3:t4]
+                                    newAudio.export('{}.b.wav'.format(name), format="wav")
+                                    name1 = (str(cont_name) + ".a")
+                                    name_csv.append([name1, dif1])
+                                    name2 = (str(cont_name) + ".b")
+                                    name_csv.append([name2, dif1])
+                                    cont_name = cont_name + 1
                     df1 =pd.DataFrame(name_csv, columns=("nombres","distancias"))
                     df1.to_csv("nombres_individuales.csv")
 
@@ -621,127 +591,54 @@ if __name__ == '__main__':
                         data2 = archivo2.readframes(-1)
                         signal = np.frombuffer(data, 'Int16')
                         signal2 = np.frombuffer(data2, 'Int16')
-                        #plt.subplot(211)
+                        plt.subplot(211)
                         plt.title(str(valores[i]))
-                        #plt.plot(signal)
-                        #plt.plot(signal2)
-                        #axes = plt.gca()
-                        #axes.set_ylim([-700, 700])
-                        #plt.subplot(212)
+                        plt.plot(signal)
+                        plt.plot(signal2)
+                        axes = plt.gca()
+                        plt.subplot(212)
                         plt.title(str(valores[i+1]))
-                        #plt.plot(signal2)
-                        #plt.plot(signal)
-                        #axes = plt.gca()
-                        #axes.set_ylim([-700, 700])
-                        #plt.show()
-                        print(len(signal))
-                        print(len(signal2))
+                        plt.plot(signal2)
+                        plt.plot(signal)
+                        axes = plt.gca()
+                        plt.show()
+
+                if option==8:
+                    a = pd.read_csv('nombres_individuales.csv')
+                    valores = a['nombres']
+                    for i in range(0,len(valores),2):
+                        uno = str(str(valores[i])+".wav")
+                        #print(uno)
+                        dos = str(str(valores[i+1])+".wav")
+                        #print(dos)
+                        archivo = wave.open(uno, 'rb')
+                        archivo2 = wave.open(dos, 'rb')
+                        canales = archivo.getnchannels()
+                        frames = archivo.getframerate()
+                        fs = frames
+                        datos = archivo.getparams()
+                        samples = archivo.getsampwidth()
+                        data = archivo.readframes(-1)
+                        data2 = archivo2.readframes(-1)
+                        signal = np.frombuffer(data, 'Int16')
+                        signal2 = np.frombuffer(data2, 'Int16')
                         f, t, Sxx = sg.spectrogram(signal, fs, nperseg=441)
+
                         plt.pcolormesh(t, f, Sxx)
                         axes = plt.gca()
                         axes.set_ylim([200, 2050])
                         plt.ylabel('Frecuencia [Hz]')
                         plt.xlabel('Tiempo [sec]')
                         plt.show()
-                        plt.plot(signal)
+                        f2, t2, Sxx2 = sg.spectrogram(signal2, fs, nperseg=441)
+
+                        plt.pcolormesh(t2, f2, Sxx2)
+                        axes = plt.gca()
+                        axes.set_ylim([200, 2050])
+                        plt.ylabel('Frecuencia [Hz]')
+                        plt.xlabel('Tiempo [sec]')
                         plt.show()
 
-                if option==8:
-                    df = pd.read_csv('fin.csv')
-                    a = (df.loc[:, '0']).astype('int')
-                    b = (df.loc[:, '1']).astype('int')
-                    c = (df.loc[:, '2']).astype('int')
-                    d = (df.loc[:, '3']).astype('int')
-                    aux=0
-
-                    for i in range(0, len(df),19):
-                        a1 = 0
-                        b1 = 0
-                        c1 = 0
-                        d1 = 0
-                        for j in range(0,19):
-                            a1=a1+a[i+j]
-                            b1=b1+b[i+j]
-                            c1=c1+c[i+j]
-                            d1=d1+d[i+j]
-                        if(a1>b1 and a1>c1 and a1>d1):
-                            print('1')
-                        if(b1 > a1 and b1 > c1 and b1 > d1):
-                            print('2')
-                        if(c1>a1 and c1>b1 and c1>d1):
-                            print('3')
-                        if(d1>a1 and d1>b1 and d1>c1):
-                            print('4')
-                    #df1 = pd.DataFrame( valores_csv[:])
-                    #df1.to_csv("nombres_valores.csv")
-
-                if option == 82:
-                    myaudio = AudioSegment.from_wav("1.wav")
-                    myaudio2 = AudioSegment.from_wav("2.wav")
-                    # silencio = silence.detect_nonsilent(myaudio, min_silence_len=1, silence_thresh=-32)
-
-                    aux = True
-                    contador = 16
-                    comparar = [0, 2000]
-                    while (aux == True):
-                        silencio = silence.detect_silence(myaudio, min_silence_len=5, silence_thresh=contador)
-                        if (not silencio) or (silencio == [comparar]) or (silencio[0][0] == 0) or (silencio[0][1] == 2000) or (len(silencio) > 10) :
-                            if contador < -120:
-                                print("error")
-                                aux = False
-                                print(contador)
-
-                            contador = contador - 1
-                        else:
-                            # print(silencio)
-                            # print(sonido)
-                            aux = False
-
-                    aux = True
-                    contador = 16
-                    comparar = [0, 2000]
-                    while (aux == True):
-                        silencio2 = silence.detect_silence(myaudio2, min_silence_len=5, silence_thresh=contador)
-                        if (not silencio) or (silencio2 == [comparar]) or (silencio2[0][0] == 0) or (silencio2[0][1] == 2000) or (len(silencio2) > 10) or (silencio2[0][1] == 1999):
-                            if contador < -120:
-                                print("error")
-                                aux = False
-                                print(contador)
-                            contador = contador - 1
-                        else:
-                            aux = False
-
-                    if (len(silencio) == 0 or len(silencio2) == 0):
-                        print("grabar denuevo")
-                    else:
-
-                        if diferencia < 0:
-                            dif_iz = 0
-                            dif_der = (diferencia * (-1))
-                        if diferencia > 0:
-                            dif_iz = diferencia
-                            dif_der = 0
-                        if diferencia == 0:
-                            dif_iz = 0
-                            dif_der = 0
-
-                        sil_1 = ((silencio[0][1] / 1000) + dif_der)
-                        sil_2 = ((silencio2[0][1] / 1000) + dif_iz)
-                        print(dif_iz)
-                        print(dif_der)
-                        print("   ")
-                        print(sil_1)
-                        print(sil_2)
-                        print(silencio)
-                        print(silencio2)
-
-                        if sil_1 < sil_2:
-                            print("derecha")
-                            print(sil_1 - sil_2)
-
-                        if sil_1 > sil_2:
-                            print("izquierda")
-                            print(sil_1 - sil_2)
                 if option == 9:
                     a = pd.read_csv('nombres_individuales.csv')
                     valores = a['nombres']
@@ -780,16 +677,20 @@ if __name__ == '__main__':
                         x= fftconvolve(signal,signal2,"same")
                         plt.plot(x)
                         plt.show()
-
                 if option==88:
+                    print("cual?")
+                    ingresado=input()
                     a = pd.read_csv('nombres_individuales.csv')
+                    print(a)
                     valores = a['nombres']
                     valores_csv = []
                     distancia =a['distancias']
                     #print(distancia)
                     #print(len(valores))
+                    #for i in range(0, int(len(valores)),2):
                     for i in range(0, int(len(valores)),2):
-                        dis=int(distancia[i])
+
+                        dis=int(distancia[i]/10)*10
                         string= int(distancia[i])
                         array = np.zeros(50,dtype=int)
                         array[int(string/10)]=1
@@ -799,26 +700,38 @@ if __name__ == '__main__':
                         dos = str(str(valores[i+1]) + ".wav")
                         archivo = wave.open(uno, 'rb')
                         archivo2 = wave.open(dos, 'rb')
-                        myaudio1 = AudioSegment.from_wav(uno)
-                        myaudio2 = AudioSegment.from_wav(dos)
-                        canales = archivo.getnchannels()
-                        frames = archivo.getframerate()
-                        fs = frames
                         datos = archivo.getparams()
                         samples = archivo.getsampwidth()
                         data = archivo.readframes(-1)
                         data2 = archivo2.readframes(-1)
                         signal = np.frombuffer(data, 'Int16')
                         signal2 = np.frombuffer(data2, 'Int16')
+                        #print(signal)
+                        #print(signal2)
 
-                        convolve = fftconvolve(signal, signal2, "same") / 10
-                        convolve = np.round(convolve)
-                        print(len(convolve))
+                        #plt.plot(signal)
+                        #plt.plot(signal2)
+                        #plt.show()
+                        #convolve = fftconvolve(signal, signal2, "same") / 10
+                        #convolve = np.round(convolve)
+                        #print(len(convolve))
+                        #if len(convolve)<9041:
+                        #    np.append(convolve,[0])
 
-                        if len(convolve)<9041:
-                            np.append(convolve,[0])
+                        #opcion 1
+                        """
+                        if np.max(signal) < np.max(signal2):
+                            signal_mayor = signal
+                        else:
+                            signal_mayor = signal2
+                        """
+                        #opcion 2
+                        signal_mayor = fftconvolve(signal, signal2, "same")
+                        signal_mayor = np.round(signal_mayor)
+
+                        diferencia=np.max(signal)-np.max(signal2)
+
                         prim = []
-                        prim1 = []
                         prim2 = []
                         prim3 = []
                         prim4 = []
@@ -838,55 +751,210 @@ if __name__ == '__main__':
                         prim18 = []
                         prim19 = []
                         prim20 = []
+                        prim21 = []
+                        prim22 = []
+                        prim23 = []
+                        prim24 = []
+                        prim25 = []
+                        prim26 = []
+                        prim27 = []
+                        prim28 = []
+                        prim29 = []
+                        prim30= []
+                        print("size original", len(signal))
+                        for x in range(0, len(signal)-29, 30):
+                            prim.append(int(signal_mayor[x]))
+                            prim2.append(int(signal_mayor[x+1]))
+                            prim3.append(int(signal_mayor[x+2]))
+                            prim4.append(int(signal_mayor[x+3]))
+                            prim5.append(int(signal_mayor[x+4]))
+                            prim6.append(int(signal_mayor[x+5]))
+                            prim7.append(int(signal_mayor[x+6]))
+                            prim8.append(int(signal_mayor[x+7]))
+                            prim9.append(int(signal_mayor[x+8]))
+                            prim10.append(int(signal_mayor[x+9]))
+                            prim11.append(int(signal_mayor[x+10]))
+                            prim12.append(int(signal_mayor[x+11]))
+                            prim13.append(int(signal_mayor[x+12]))
+                            prim14.append(int(signal_mayor[x+13]))
+                            prim15.append(int(signal_mayor[x+14]))
+                            prim16.append(int(signal_mayor[x+15]))
+                            prim17.append(int(signal_mayor[x+16]))
+                            prim18.append(int(signal_mayor[x+17]))
+                            prim19.append(int(signal_mayor[x+18]))
+                            prim20.append(int(signal_mayor[x+19]))
+                            prim22.append(int(signal_mayor[x + 21]))
+                            prim21.append(int(signal_mayor[x+20]))
+                            prim23.append(int(signal_mayor[x + 22]))
+                            prim24.append(int(signal_mayor[x + 23]))
+                            prim25.append(int(signal_mayor[x + 24]))
+                            prim26.append(int(signal_mayor[x + 25]))
+                            prim27.append(int(signal_mayor[x + 26]))
+                            prim28.append(int(signal_mayor[x + 27]))
+                            prim29.append(int(signal_mayor[x + 28]))
+                            prim30.append(int(signal_mayor[x + 29]))
+                        plt.plot(prim)
+                        plt.show()
+                        prim=((mfcc(np.asarray(prim[0:len(prim)]), int(1000*np.log10(len(signal))), nfft=1103)*10).astype(int)).transpose().tolist()
+                        plt.plot(prim[0])
+                        plt.show()
+                        prim2=((mfcc(np.asarray(prim2[0:len(prim2)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim3=((mfcc(np.asarray(prim3[0:len(prim3)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim4=((mfcc(np.asarray(prim4[0:len(prim4)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim5=((mfcc(np.asarray(prim5[0:len(prim5)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim6=((mfcc(np.asarray(prim6[0:len(prim6)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim7=((mfcc(np.asarray(prim7[0:len(prim7)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim8=((mfcc(np.asarray(prim8[0:len(prim8)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim9=((mfcc(np.asarray(prim9[0:len(prim9)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim10=((mfcc(np.asarray(prim10[0:len(prim10)]), 44100/30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim12=((mfcc(np.asarray(prim12[0:len(prim12)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim13=((mfcc(np.asarray(prim13[0:len(prim13)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim11=((mfcc(np.asarray(prim11[0:len(prim11)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim14=((mfcc(np.asarray(prim14[0:len(prim14)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim15=((mfcc(np.asarray(prim15[0:len(prim15)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim16=((mfcc(np.asarray(prim16[0:len(prim16)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim17=((mfcc(np.asarray(prim17[0:len(prim17)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim18=((mfcc(np.asarray(prim18[0:len(prim18)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim19=((mfcc(np.asarray(prim19[0:len(prim19)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim20=((mfcc(np.asarray(prim20[0:len(prim20)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim21=((mfcc(np.asarray(prim21[0:len(prim21)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim22=((mfcc(np.asarray(prim22[0:len(prim22)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim23=((mfcc(np.asarray(prim23[0:len(prim23)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim24=((mfcc(np.asarray(prim24[0:len(prim24)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim25=((mfcc(np.asarray(prim25[0:len(prim25)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim26=((mfcc(np.asarray(prim26[0:len(prim26)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim27=((mfcc(np.asarray(prim27[0:len(prim27)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim28=((mfcc(np.asarray(prim28[0:len(prim28)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim29=((mfcc(np.asarray(prim29[0:len(prim29)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
+                        prim30=((mfcc(np.asarray(prim30[0:len(prim30)]), 44100 / 30, nfft=1103)*10).astype(int)).transpose().tolist()
 
-                        rep=len(convolve)
-                        for x in range(0, rep-19, 20):
-                            #print(x)
-                            prim.append(convolve[x])
-                            prim2.append(convolve[x+1])
-                            prim3.append(convolve[x+2])
-                            prim4.append(convolve[x+3])
-                            prim5.append(convolve[x+4])
-                            prim6.append(convolve[x+5])
-                            prim7.append(convolve[x+6])
-                            prim8.append(convolve[x+7])
-                            prim9.append(convolve[x+8])
-                            prim10.append(convolve[x+9])
-                            prim11.append(convolve[x+10])
-                            prim12.append(convolve[x+11])
-                            prim13.append(convolve[x+12])
-                            prim14.append(convolve[x+13])
-                            prim15.append(convolve[x+14])
-                            prim16.append(convolve[x+15])
-                            prim17.append(convolve[x+16])
-                            prim18.append(convolve[x+17])
-                            prim19.append(convolve[x+18])
-                            prim20.append(convolve[x+19])
+                        prim = prim[0]
+                        prim2 = prim2[0]
+                        prim3 = prim3[0]
+                        prim4 = prim4[0]
+                        prim5 = prim5[0]
+                        prim6 = prim6[0]
+                        prim7 = prim7[0]
+                        prim8 = prim8[0]
+                        prim9 = prim9[0]
+                        prim10 = prim10[0]
+                        prim11 = prim11[0]
+                        prim12 = prim12[0]
+                        prim13 = prim13[0]
+                        prim14 = prim14[0]
+                        prim15 = prim15[0]
+                        prim16 = prim16[0]
+                        prim17 = prim17[0]
+                        prim18 = prim18[0]
+                        prim19 = prim19[0]
+                        prim20 = prim20[0]
+                        prim21 = prim21[0]
+                        prim22 = prim22[0]
+                        prim23 = prim23[0]
+                        prim24 = prim24[0]
+                        prim25 = prim25[0]
+                        prim26 = prim26[0]
+                        prim27 = prim27[0]
+                        prim28 = prim28[0]
+                        prim29 = prim29[0]
+                        prim30 = prim30[0]
 
-                            #print(x+18)
+                        prim.append(diferencia)
+                        prim2.append(diferencia)
+                        prim3.append(diferencia)
+                        prim4.append(diferencia)
+                        prim5.append(diferencia)
+                        prim6.append(diferencia)
+                        prim7.append(diferencia)
+                        prim8.append(diferencia)
+                        prim9.append(diferencia)
+                        prim10.append(diferencia)
+                        prim11.append(diferencia)
+                        prim12.append(diferencia)
+                        prim13.append(diferencia)
+                        prim14.append(diferencia)
+                        prim15.append(diferencia)
+                        prim16.append(diferencia)
+                        prim17.append(diferencia)
+                        prim18.append(diferencia)
+                        prim19.append(diferencia)
+                        prim20.append(diferencia)
+                        prim21.append(diferencia)
+                        prim22.append(diferencia)
+                        prim23.append(diferencia)
+                        prim24.append(diferencia)
+                        prim25.append(diferencia)
+                        prim26.append(diferencia)
+                        prim27.append(diferencia)
+                        prim28.append(diferencia)
+                        prim29.append(diferencia)
+                        prim30.append(diferencia)
 
-                        for z in range(0,50):
-                            prim.append(array[z])
-                            prim2.append(array[z])
-                            prim3.append(array[z])
-                            prim4.append(array[z])
-                            prim5.append(array[z])
-                            prim6.append(array[z])
-                            prim7.append(array[z])
-                            prim8.append(array[z])
-                            prim9.append(array[z])
-                            prim10.append(array[z])
-                            prim11.append(array[z])
-                            prim12.append(array[z])
-                            prim13.append(array[z])
-                            prim14.append(array[z])
-                            prim15.append(array[z])
-                            prim16.append(array[z])
-                            prim17.append(array[z])
-                            prim18.append(array[z])
-                            prim19.append(array[z])
-                            prim20.append(array[z])
-                        #print(i)
+
+                        if ingresado == "b":
+                            prim.append(dis)
+                            prim2.append(dis)
+                            prim3.append(dis)
+                            prim4.append(dis)
+                            prim5.append(dis)
+                            prim6.append(dis)
+                            prim7.append(dis)
+                            prim8.append(dis)
+                            prim9.append(dis)
+                            prim10.append(dis)
+                            prim11.append(dis)
+                            prim12.append(dis)
+                            prim13.append(dis)
+                            prim14.append(dis)
+                            prim15.append(dis)
+                            prim16.append(dis)
+                            prim17.append(dis)
+                            prim18.append(dis)
+                            prim19.append(dis)
+                            prim20.append(dis)
+                            prim21.append(dis)
+                            prim22.append(dis)
+                            prim23.append(dis)
+                            prim24.append(dis)
+                            prim25.append(dis)
+                            prim26.append(dis)
+                            prim27.append(dis)
+                            prim28.append(dis)
+                            prim29.append(dis)
+                            prim30.append(dis)
+
+                        if ingresado == "a":
+                            for z in range(0,20):
+                                prim.append(array[z])
+                                prim2.append(array[z])
+                                prim3.append(array[z])
+                                prim4.append(array[z])
+                                prim5.append(array[z])
+                                prim6.append(array[z])
+                                prim7.append(array[z])
+                                prim8.append(array[z])
+                                prim9.append(array[z])
+                                prim10.append(array[z])
+                                prim11.append(array[z])
+                                prim12.append(array[z])
+                                prim13.append(array[z])
+                                prim14.append(array[z])
+                                prim15.append(array[z])
+                                prim16.append(array[z])
+                                prim17.append(array[z])
+                                prim18.append(array[z])
+                                prim19.append(array[z])
+                                prim20.append(array[z])
+                                prim21.append(array[z])
+                                prim22.append(array[z])
+                                prim23.append(array[z])
+                                prim24.append(array[z])
+                                prim25.append(array[z])
+                                prim26.append(array[z])
+                                prim27.append(array[z])
+                                prim28.append(array[z])
+                                prim29.append(array[z])
+                                prim30.append(array[z])
                         valores_csv.append(prim)
                         valores_csv.append(prim2)
                         valores_csv.append(prim3)
@@ -906,12 +974,23 @@ if __name__ == '__main__':
                         valores_csv.append(prim18)
                         valores_csv.append(prim19)
                         valores_csv.append(prim20)
+                        valores_csv.append(prim21)
+                        valores_csv.append(prim22)
+                        valores_csv.append(prim23)
+                        valores_csv.append(prim24)
+                        valores_csv.append(prim25)
+                        valores_csv.append(prim26)
+                        valores_csv.append(prim27)
+                        valores_csv.append(prim28)
+                        valores_csv.append(prim29)
+                        valores_csv.append(prim30)
 
 
-                    #print(len(valores_csv))
 
                     df1 = pd.DataFrame( valores_csv[:])
+                    print(df1)
                     df1.to_csv("nombres_valores.csv")
+
 
                 if option == 89:
                     a = pd.read_csv('nombres_individuales.csv')
@@ -1048,6 +1127,3 @@ if __name__ == '__main__':
 
 
     # graba simultaneamente 2 microfonos
-
-
-
